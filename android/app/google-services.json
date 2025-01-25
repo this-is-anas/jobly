@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "686988990733",
+    "project_id": "jobly-3dd32",
+    "storage_bucket": "jobly-3dd32.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:686988990733:android:fc2025c8f23b70eafd7844",
+        "android_client_info": {
+          "package_name": "com.example.jobly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDWJGhmA4REn23Emsm-iy43-h75YpDtzk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
