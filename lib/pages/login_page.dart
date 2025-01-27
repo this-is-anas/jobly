@@ -137,7 +137,7 @@ class LoginPage extends StatelessWidget {
                   elevation: 3,
                 ),
                 icon: Image.asset(
-                  'assets/images/google.png', // Add a Google logo asset
+                  'lib/assets/images/google.png', // Add a Google logo asset
                   height: 24,
                   width: 24,
                 ),
