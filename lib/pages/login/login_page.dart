@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart'; // Add this package
-import 'home_page.dart';
+import '../../services/auth_service.dart';
+import '../home_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -44,30 +44,7 @@ class LoginPage extends StatelessWidget {
     }
   }
 
-  // Google Sign-In
-  Future<void> _signInWithGoogle(BuildContext context) async {
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      await FirebaseAuth.instance.signInWithCredential(credential);
-
-      // Navigate to HomePage after successful Google Sign-In
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Sign-In failed: ${e.toString()}')),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,31 +103,54 @@ class LoginPage extends StatelessWidget {
             bottom: 20,
             child: Center(
               child: ElevatedButton.icon(
-                onPressed: () => _signInWithGoogle(context),
+                onPressed: () async {
+                  try {
+                    // Call the AuthService's Google Sign-In method
+                    await AuthService().signInWithGoogle();
+
+                    // Navigate to HomePage on success
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                    );
+                  } catch (e) {
+                    // Show a SnackBar for any errors during sign-in
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Sign-In Failed: $e')),
+                    );
+                  }
+                },
+                icon: Image.asset(
+                  'lib/assets/images/google.png', // Path to the Google logo
+                  height: 24,
+                ),
+                label: const Text(
+                  'Sign in with Google',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  elevation: 3,
-                ),
-                icon: Image.asset(
-                  'lib/assets/images/google.png', // Add a Google logo asset
-                  height: 24,
-                  width: 24,
-                ),
-                label: Text(
-                  'Sign in with Google',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  elevation: 2,
                 ),
               ),
-            ),
-          ),
+                // icon: Image.asset(
+                //   'lib/assets/images/google.png', // Add a Google logo asset
+                //   height: 24,
+                //   width: 24,
+                // ),
+                // label: Text(
+                //   'Sign in with Google',
+                //   style: GoogleFonts.montserrat(
+                //     fontSize: 16,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                ),
+              ),
+
         ],
       ),
     );

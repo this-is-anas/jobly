@@ -1,8 +1,8 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:jobly/pages/profile_page.dart';
-import 'history_page.dart';
-import 'login_page.dart';
+import 'package:jobly/pages/user/profile_page.dart';
+import 'history/history_page.dart';
+import 'login/login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
