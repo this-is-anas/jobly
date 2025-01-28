@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
-class ProfilePage extends StatelessWidget {
+import 'edit_profile_page.dart';
+
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  String _email = 'john.doe@example.com';
+  String _jobPreferences = 'Software Developer';
+  String _resumeFileName = 'resume.pdf';
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +28,7 @@ class ProfilePage extends StatelessWidget {
             const CircleAvatar(
               radius: 50,
               backgroundImage: AssetImage(
-                  'lib/assets/images/google.png'), // Add this image to your assets
+                  'lib/assets/google.png'), // Add this image to your assets
             ),
             const SizedBox(height: 16),
 
@@ -46,12 +57,12 @@ class ProfilePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    _buildInfoRow(Icons.email, 'Email', 'john.doe@example.com'),
+                    _buildInfoRow(Icons.email, 'Email', _email),
                     const Divider(),
-                    _buildInfoRow(Icons.description, 'Resume', 'resume.pdf'),
+                    _buildInfoRow(Icons.description, 'Resume', _resumeFileName),
                     const Divider(),
                     _buildInfoRow(
-                        Icons.work, 'Job Preferences', 'Software Developer'),
+                        Icons.work, 'Job Preferences', _jobPreferences),
                   ],
                 ),
               ),
@@ -60,8 +71,22 @@ class ProfilePage extends StatelessWidget {
             // Edit Button
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
-                // TODO: Implement edit functionality
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EditProfilePage(),
+                  ),
+                );
+
+                if (result != null && mounted) {
+                  setState(() {
+                    _email = result['email'];
+                    _jobPreferences = result['jobPreferences'];
+                    _resumeFileName =
+                        result['resumeFileName'] ?? _resumeFileName;
+                  });
+                }
               },
               child: const Text('Edit Profile'),
             ),
