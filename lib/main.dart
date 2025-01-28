@@ -4,7 +4,7 @@ import 'package:jobly/pages/login/auth_page.dart';
 
 import 'firebase_options.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -23,4 +23,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
