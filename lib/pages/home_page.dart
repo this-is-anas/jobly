@@ -1,6 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:jobly/pages/user/profile_page.dart';
+import '../assets/components/job_card.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
 
@@ -71,8 +72,29 @@ class HomeContent extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Welcome to the Home Page!'),
+      body: ListView(
+        padding: const EdgeInsets.all(8.0),
+        children: [
+          // Add JobCard widgets here
+          JobCard(
+            jobTitle: 'Flutter Developer',
+            companyName: 'Tech Corp',
+            location: 'Remote',
+            requirements: '2+ years of experience in Flutter, Dart, and REST APIs.',
+          ),
+          JobCard(
+            jobTitle: 'Backend Engineer',
+            companyName: 'Data Inc.',
+            location: 'New York',
+            requirements: 'Experience with Node.js, Express, and MongoDB.',
+          ),
+          JobCard(
+            jobTitle: 'UI/UX Designer',
+            companyName: 'Design Hub',
+            location: 'San Francisco',
+            requirements: 'Proficiency in Figma, Adobe XD, and wireframing tools.',
+          ),
+        ],
       ),
     );
   }
