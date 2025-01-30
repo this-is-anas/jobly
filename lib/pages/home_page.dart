@@ -1,7 +1,9 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jobly/pages/user/profile_page.dart';
+
 import '../assets/components/job_card.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
@@ -78,8 +80,10 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
-  void _handleSwipeRight() {
+  void _handleSwipeRight() async {
     if (_currentIndex < _jobs.length - 1) {
+      final currentJob = _jobs[_currentIndex];
+      await _saveSwipeAction(currentJob, 'interested'); // Save only for "interested"
       setState(() {
         _currentIndex++;
       });
@@ -102,6 +106,31 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
+  // Save swipe action to Firestore
+  Future<void> _saveSwipeAction(Map<String, dynamic> job, String action) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      await FirebaseFirestore.instance.collection('user_swipes').add({
+        'userId': userId,
+        'jobId': job['id'], // Assuming each job has a unique ID
+        'title': job['title'],
+        'company': job['company'],
+        'location': job['location'],
+        'requirements': job['requirements'],
+        'action': action, // "interested" for swipe right
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      print('Swipe action saved: $action for job ${job['title']}');
+    } catch (e) {
+      print('Error saving swipe action: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_jobs.isEmpty) {
@@ -110,9 +139,7 @@ class _HomeContentState extends State<HomeContent> {
         body: const Center(child: CircularProgressIndicator()),
       );
     }
-
     final currentJob = _jobs[_currentIndex];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Job Listings'),
