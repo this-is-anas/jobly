@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jobly/pages/user/profile_page.dart';
 
 import '../assets/components/job_card.dart';
+import '../services/job_service.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
 
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Separate widget for Home Content
+
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -59,9 +61,10 @@ class HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<HomeContent> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> _jobs = []; // List of jobs fetched from Firestore
+  final JobService _jobService = JobService(); // Initialize the JobService
+  List<dynamic> _jobs = []; // List of jobs fetched from the API
   int _currentIndex = 0; // Tracks the current job being displayed
+  bool _isLoading = true; // Loading state
 
   @override
   void initState() {
@@ -71,19 +74,21 @@ class _HomeContentState extends State<HomeContent> {
 
   Future<void> _fetchJobs() async {
     try {
-      final querySnapshot = await _firestore.collection('jobs').get();
+      final jobs = await _jobService.fetchJobs();
       setState(() {
-        _jobs = querySnapshot.docs.map((doc) => doc.data()).toList();
+        _jobs = jobs;
+        _isLoading = false;
       });
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       print('Error fetching jobs: $e');
     }
   }
 
-  void _handleSwipeRight() async {
+  void _handleSwipeRight() {
     if (_currentIndex < _jobs.length - 1) {
-      final currentJob = _jobs[_currentIndex];
-      await _saveSwipeAction(currentJob, 'interested'); // Save only for "interested"
       setState(() {
         _currentIndex++;
       });
@@ -106,40 +111,24 @@ class _HomeContentState extends State<HomeContent> {
     }
   }
 
-  // Save swipe action to Firestore
-  Future<void> _saveSwipeAction(Map<String, dynamic> job, String action) async {
-    try {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-
-      await FirebaseFirestore.instance.collection('user_swipes').add({
-        'userId': userId,
-        'jobId': job['id'], // Assuming each job has a unique ID
-        'title': job['title'],
-        'company': job['company'],
-        'location': job['location'],
-        'requirements': job['requirements'],
-        'action': action, // "interested" for swipe right
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-
-      print('Swipe action saved: $action for job ${job['title']}');
-    } catch (e) {
-      print('Error saving swipe action: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_jobs.isEmpty) {
+    if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Job Listings')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
+
+    if (_jobs.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Job Listings')),
+        body: const Center(child: Text('No jobs available')),
+      );
+    }
+
     final currentJob = _jobs[_currentIndex];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Job Listings'),
@@ -162,9 +151,9 @@ class _HomeContentState extends State<HomeContent> {
           Expanded(
             child: JobCard(
               jobTitle: currentJob['title'],
-              companyName: currentJob['company'],
-              location: currentJob['location'],
-              requirements: currentJob['requirements'],
+              companyName: currentJob['company']['display_name'],
+              location: currentJob['location']['display_name'],
+              requirements: currentJob['description'] ?? 'No Requirements',
               onSwipeRight: _handleSwipeRight,
               onSwipeLeft: _handleSwipeLeft,
             ),
