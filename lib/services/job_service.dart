@@ -2,19 +2,41 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class JobService {
-  final String apiKey = ''; // Replace if regenerated
-  final  String appId = ''; // Replace with your Adzuna App ID
+  final String apiKey = 'sk-live-FLN97QTUChuABCuiJvQ3oA6st6bK8a49xGHNc2yk'; // Replace with your actual API key
 
-  Future<List<dynamic>> fetchJobs() async {
-    final url =
-        'https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=$appId&app_key=$apiKey&results_per_page=10';
+  Future<List<dynamic>> fetchJobs({
+    String? location,
+    String? title,
+    String? company,
+    String? experience,
+    String? jobType,
+    int limit = 10, // Default limit is 10 jobs
+  }) async {
+    var url = 'https://jobs.indianapi.in/jobs';
+
+    // Add query parameters
+    final Map<String, dynamic> queryParams = {
+      if (location != null && location.isNotEmpty) 'location': location,
+      if (title != null && title.isNotEmpty) 'title': title,
+      if (company != null && company.isNotEmpty) 'company': company,
+      if (experience != null && experience.isNotEmpty) 'experience': experience,
+      if (jobType != null && jobType.isNotEmpty) 'job_type': jobType,
+      'limit': limit.toString(),
+    };
 
     try {
-      final response = await http.get(Uri.parse(url));
+      print('Fetching jobs with URL: $url');
+      final response = await http.get(
+        Uri.parse(url).replace(queryParameters: queryParams),
+        headers: {
+          'X-Api-Key': apiKey, // Include the API key in the header
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['results']; // Extract the list of jobs from the API response
+        print('API Response: $data'); // Log the full API response
+        return data; // Return the list of jobs
       } else {
         print('Failed to fetch jobs. Status code: ${response.statusCode}');
         throw Exception('Failed to load jobs');

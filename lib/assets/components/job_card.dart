@@ -1,95 +1,113 @@
 import 'package:flutter/material.dart';
 
 class JobCard extends StatelessWidget {
-  final String? jobTitle;
-  final String? companyName;
-  final String? location;
-  final String? requirements;
-  final VoidCallback onSwipeRight; // Triggered when swiped right
-  final VoidCallback onSwipeLeft; // Triggered when swiped left
+  final String jobTitle;
+  final String companyName;
+  final String location;
+  final String requirements;
+  final String? experience; // Add a new parameter for experience
+  final String? roleAndResponsibility; // Add a new parameter for role_and_responsibility
+  final VoidCallback onSwipeRight;
+  final VoidCallback onSwipeLeft;
 
   const JobCard({
     super.key,
-    this.jobTitle,
-    this.companyName,
-    this.location,
-    this.requirements,
+    required this.jobTitle,
+    required this.companyName,
+    required this.location,
+    required this.requirements,
+    this.experience, // Optional parameter for experience
+    this.roleAndResponsibility, // Optional parameter for role_and_responsibility
     required this.onSwipeRight,
     required this.onSwipeLeft,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! > 0) {
-            // Swiped left (not interested)
-            onSwipeLeft();
-          } else if (details.primaryVelocity! < 0) {
-            // Swiped right (interested)
-            onSwipeRight();
-          }
-        },
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Container(
-            width: double.infinity, // Full width of the parent
-            height: 300, // Fixed height for all cards
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      margin: const EdgeInsets.all(16.0),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              jobTitle,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              companyName,
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 8),
+            Row(
               children: [
+                const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                const SizedBox(width: 4),
                 Text(
-                  jobTitle ?? 'No Title', // Default value if jobTitle is null
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  location,
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  companyName ?? 'No Company', // Default value if companyName is null
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+              ],
+            ),
+            if (experience != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.access_time, size: 16, color: Colors.blue),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Experience: $experience',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  location ?? 'No Location', // Default value if location is null
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.blue,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Requirements:",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: SingleChildScrollView(
+                ],
+              ),
+            ],
+            if (roleAndResponsibility != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.task, size: 16, color: Colors.orange),
+                  const SizedBox(width: 4),
+                  Expanded(
                     child: Text(
-                      requirements ?? 'No Requirements', // Default value if requirements is null
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
+                      'Role & Responsibility: $roleAndResponsibility',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+            Text(
+              requirements,
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: onSwipeLeft,
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Not Interested'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: onSwipeRight,
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Interested'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
                   ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -244,118 +244,120 @@ class _EditProfilePageState extends State<EditProfilePage> {
       appBar: AppBar(
         title: const Text('Edit Profile'),
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Profile Picture Section
-                  Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.grey[300],
-                          backgroundImage: _selectedImage != null
-                              ? FileImage(_selectedImage!)
-                              : null,
-                          child: _selectedImage == null
-                              ? Icon(Icons.person,
-                              size: 50, color: Colors.grey[600])
-                              : null,
-                        ),
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: CircleAvatar(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            radius: 18,
-                            child: IconButton(
-                              icon: const Icon(Icons.camera_alt,
-                                  size: 18, color: Colors.white),
-                              onPressed: _showImageSourceDialog,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Profile Picture Section
+                    Center(
+                      child: Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.grey[300],
+                            backgroundImage: _selectedImage != null
+                                ? FileImage(_selectedImage!)
+                                : null,
+                            child: _selectedImage == null
+                                ? Icon(Icons.person,
+                                size: 50, color: Colors.grey[600])
+                                : null,
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: CircleAvatar(
+                              backgroundColor: Theme.of(context).primaryColor,
+                              radius: 18,
+                              child: IconButton(
+                                icon: const Icon(Icons.camera_alt,
+                                    size: 18, color: Colors.white),
+                                onPressed: _showImageSourceDialog,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Name Field
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Full Name',
-                      icon: Icon(Icons.person),
+                    const SizedBox(height: 24),
+        
+                    // Name Field
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        icon: Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Email Field
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      icon: Icon(Icons.email),
+                    const SizedBox(height: 16),
+        
+                    // Email Field
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        icon: Icon(Icons.email),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Job Preferences Field
-                  TextFormField(
-                    controller: _jobPreferencesController,
-                    decoration: const InputDecoration(
-                      labelText: 'Job Preferences',
-                      icon: Icon(Icons.work),
+                    const SizedBox(height: 16),
+        
+                    // Job Preferences Field
+                    TextFormField(
+                      controller: _jobPreferencesController,
+                      decoration: const InputDecoration(
+                        labelText: 'Job Preferences',
+                        icon: Icon(Icons.work),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your job preferences';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your job preferences';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Save Button
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _createOrUpdateUserProfile,
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Save Changes'),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+        
+                    // Save Button
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _createOrUpdateUserProfile,
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : const Text('Save Changes'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (_isLoading)
-            Container(
-              color: Colors.black.withOpacity(0.3),
-              child: const Center(
-                child: CircularProgressIndicator(),
+            if (_isLoading)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
