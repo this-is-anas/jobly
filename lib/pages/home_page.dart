@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jobly/pages/user/profile_page.dart';
 
 import '../assets/components/job_card.dart';
+import '../services/firebase_service.dart';
 import '../services/job_service.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
@@ -53,6 +54,7 @@ class _HomePageState extends State<HomePage> {
 // Separate widget for Home Content
 
 
+
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -62,6 +64,7 @@ class HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<HomeContent> {
   final JobService _jobService = JobService(); // Initialize the JobService
+  final FirebaseService _firebaseService = FirebaseService(); // Initialize FirebaseService
   List<dynamic> _jobs = [];
   int _currentIndex = 0; // Tracks the current job being displayed
   bool _isLoading = true; // Loading state
@@ -97,6 +100,8 @@ class _HomeContentState extends State<HomeContent> {
 
   void _handleSwipeRight() {
     if (_currentIndex < _jobs.length - 1) {
+      final currentJob = _jobs[_currentIndex];
+      _firebaseService.saveJobToFirebase(currentJob); // Save the job to Firebase
       setState(() {
         _currentIndex++;
       });
