@@ -55,7 +55,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       if (userId.isEmpty) return;
 
       final docSnapshot =
-          await _firestore.collection('users').doc(userId).get();
+      await _firestore.collection('users').doc(userId).get();
 
       if (docSnapshot.exists) {
         final data = docSnapshot.data()!;
@@ -265,7 +265,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               : null,
                           child: _selectedImage == null
                               ? Icon(Icons.person,
-                                  size: 50, color: Colors.grey[600])
+                              size: 50, color: Colors.grey[600])
                               : null,
                         ),
                         Positioned(

@@ -1,5 +1,6 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jobly/pages/user/profile_page.dart';
 import '../assets/components/job_card.dart';
 import 'history/history_page.dart';
@@ -14,8 +15,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _pageIndex = 0; // Tracks the current page index
-
-  // Define pages from the `pages` directory
   final List<Widget> _pages = [
     const HomeContent(), // Home Content (not HomePage itself)
     const ProfilePage(), // Profile Page
@@ -25,7 +24,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       extendBody: true, // Ensure bottom bar is above content
       body: _pages[_pageIndex], // Display the selected page
       bottomNavigationBar: CurvedNavigationBar(
@@ -51,14 +49,73 @@ class _HomePageState extends State<HomePage> {
 }
 
 // Separate widget for Home Content
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
   @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> _jobs = []; // List of jobs fetched from Firestore
+  int _currentIndex = 0; // Tracks the current job being displayed
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchJobs(); // Fetch jobs when the widget initializes
+  }
+
+  Future<void> _fetchJobs() async {
+    try {
+      final querySnapshot = await _firestore.collection('jobs').get();
+      setState(() {
+        _jobs = querySnapshot.docs.map((doc) => doc.data()).toList();
+      });
+    } catch (e) {
+      print('Error fetching jobs: $e');
+    }
+  }
+
+  void _handleSwipeRight() {
+    if (_currentIndex < _jobs.length - 1) {
+      setState(() {
+        _currentIndex++; // Move to the next job
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No more jobs available')),
+      );
+    }
+  }
+
+  void _handleSwipeLeft() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--; // Move to the previous job
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You are at the first job')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_jobs.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Job Listings')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final currentJob = _jobs[_currentIndex];
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Page'),
+        title: const Text('Job Listings'),
         actions: [
           IconButton(
             onPressed: () {
@@ -72,27 +129,42 @@ class HomeContent extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(8.0),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Add JobCard widgets here
-          JobCard(
-            jobTitle: 'Flutter Developer',
-            companyName: 'Tech Corp',
-            location: 'Remote',
-            requirements: '2+ years of experience in Flutter, Dart, and REST APIs.',
+          Expanded(
+            child: JobCard(
+              jobTitle: currentJob['title'],
+              companyName: currentJob['company'],
+              location: currentJob['location'],
+              requirements: currentJob['requirements'],
+              onSwipeRight: _handleSwipeRight,
+              onSwipeLeft: _handleSwipeLeft,
+            ),
           ),
-          JobCard(
-            jobTitle: 'Backend Engineer',
-            companyName: 'Data Inc.',
-            location: 'New York',
-            requirements: 'Experience with Node.js, Express, and MongoDB.',
-          ),
-          JobCard(
-            jobTitle: 'UI/UX Designer',
-            companyName: 'Design Hub',
-            location: 'San Francisco',
-            requirements: 'Proficiency in Figma, Adobe XD, and wireframing tools.',
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _handleSwipeLeft,
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Not Interested'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _handleSwipeRight,
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Interested'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
