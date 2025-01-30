@@ -81,7 +81,7 @@ class _HomeContentState extends State<HomeContent> {
   void _handleSwipeRight() {
     if (_currentIndex < _jobs.length - 1) {
       setState(() {
-        _currentIndex++; // Move to the next job
+        _currentIndex++;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,7 +93,7 @@ class _HomeContentState extends State<HomeContent> {
   void _handleSwipeLeft() {
     if (_currentIndex > 0) {
       setState(() {
-        _currentIndex--; // Move to the previous job
+        _currentIndex--;
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
