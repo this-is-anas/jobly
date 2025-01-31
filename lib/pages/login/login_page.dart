@@ -63,34 +63,34 @@ class LoginPage extends StatelessWidget {
               );
             },
             theme: LoginTheme(
-              primaryColor: const Color(0xFF0F4C81), // Classic Blue
-              accentColor: Colors.grey[300], // Light Gray
-              titleStyle: GoogleFonts.montserrat(
+              primaryColor: Theme.of(context).colorScheme.primary, // Use primary color
+              accentColor: Theme.of(context).colorScheme.secondary, // Use secondary color
+              titleStyle: GoogleFonts.nunito(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
-              bodyStyle: GoogleFonts.merriweather(
+              bodyStyle: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.normal,
                 color: Colors.grey[800],
               ),
-              textFieldStyle: GoogleFonts.merriweather(
+              textFieldStyle: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
                 color: Colors.black,
               ),
-              buttonStyle: GoogleFonts.montserrat(
+              buttonStyle: GoogleFonts.nunito(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
-              cardTheme: const CardTheme(
+              cardTheme: CardTheme(
                 color: Colors.white,
                 elevation: 5,
-                margin: EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'dart:io';
 // import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -286,13 +287,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-        
-                    // Name Field
+
+                    // Full Name Field
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Full Name',
-                        icon: Icon(Icons.person),
+                        icon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
+                        labelStyle: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.grey[600], // Subtle gray for the label
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -300,15 +314,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         }
                         return null;
                       },
+                      style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black87, // Dark text for input
+                      ),
                     ),
                     const SizedBox(height: 16),
         
+
                     // Email Field
                     TextFormField(
                       controller: _emailController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Email',
-                        icon: Icon(Icons.email),
+                        icon: Icon(Icons.email, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
+                        labelStyle: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.grey[600], // Subtle gray for the label
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -319,15 +352,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         }
                         return null;
                       },
+                      style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black87, // Dark text for input
+                      ),
                     ),
                     const SizedBox(height: 16),
-        
+
                     // Job Preferences Field
                     TextFormField(
                       controller: _jobPreferencesController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Job Preferences',
-                        icon: Icon(Icons.work),
+                        icon: Icon(Icons.work, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
+                        labelStyle: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.grey[600], // Subtle gray for the label
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -335,6 +386,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         }
                         return null;
                       },
+                      style: GoogleFonts.nunito(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black87, // Dark text for input
+                      ),
                     ),
                     const SizedBox(height: 24),
         

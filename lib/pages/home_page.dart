@@ -33,20 +33,20 @@ class _HomePageState extends State<HomePage> {
       extendBody: true, // Ensure bottom bar is above content
       body: SafeArea(child: _pages[_pageIndex]), // Display the selected page
       bottomNavigationBar: CurvedNavigationBar(
-        color: Colors.blue, // Color of the navigation bar
-        buttonBackgroundColor: Colors.blue, // Background color of the selected icon
-        backgroundColor: Colors.white, // Background color behind the navigation bar
-        height: 60, // Height of the navigation bar
-        animationDuration: const Duration(milliseconds: 300), // Animation duration
-        index: _pageIndex, // Current selected index
+        color: Theme.of(context).colorScheme.primary, // Use primary color
+        buttonBackgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        height: 60,
+        animationDuration: const Duration(milliseconds: 300),
+        index: _pageIndex,
         items: const [
-          Icon(Icons.home, size: 30, color: Colors.white), // Home icon
-          Icon(Icons.person, size: 30, color: Colors.white), // Profile icon
-          Icon(Icons.history, size: 30, color: Colors.white), // History icon
+          Icon(Icons.home, size: 30, color: Colors.white),
+          Icon(Icons.person, size: 30, color: Colors.white),
+          Icon(Icons.history, size: 30, color: Colors.white),
         ],
         onTap: (index) {
           setState(() {
-            _pageIndex = index; // Update the selected index
+            _pageIndex = index;
           });
         },
       ),
