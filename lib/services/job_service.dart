@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class JobService {
-  final String _email = 'this.is.anas.24@gmail.com'; // Replace with your email
-  final String _authKey = '7jhyQQhu6MrH2RcVT3FQXoRq7E49QN7i8kd9wvyOPpg='; // Replace with your USAJobs API key
+  final String _email = ''; // Replace with your email
+  final String _authKey = ''; // Replace with your USAJobs API key
 
   Future<List<dynamic>> fetchUsaJobs({
     String? keyword,

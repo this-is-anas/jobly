@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // Import Google Fonts
+import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'pages/login/auth_page.dart';
@@ -21,31 +21,26 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Jobly',
       theme: ThemeData(
-        // Color Scheme
-        primaryColor: const Color(0xFF6A1B9A), // Deep Purple
+        // Primary and Secondary Colors
+        primaryColor: const Color(0xFFAD8B73), // Terracotta Brown
         colorScheme: ColorScheme.light(
-          primary: const Color(0xFF6A1B9A), // Deep Purple
-          secondary: const Color(0xFF03DAC5), // Cyan Accent
-          background: const Color(0xFFF5F5F5), // Light Gray Background
+          primary: const Color(0xFFAD8B73), // Terracotta Brown
+          secondary: const Color(0xFFCEAB93), // Beige-Brown
+          background: const Color(0xFFFBE9), // Off-White Background
         ),
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Light Gray
+        scaffoldBackgroundColor: const Color(0xFFFBE9), // Off-White for Scaffold
 
         // Text Theme with Nunito Font
         textTheme: GoogleFonts.nunitoTextTheme().copyWith(
-          headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-          headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: const Color(0xFF03DAC5)),
-          headlineSmall: TextStyle(fontSize: 20, fontWeight: FontWeight.w500, color: Colors.black87),
-          titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black87),
-          titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
-          bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: Colors.black87, height: 1.5),
-          bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.grey[600]),
-          labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+          headlineLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
+          headlineMedium: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: const Color(0xFFAD8B73)),
+          bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: Colors.black87),
         ),
 
         // Elevated Button Theme
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6A1B9A), // Deep Purple
+            backgroundColor: const Color(0xFFAD8B73), // Terracotta Brown
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -55,7 +50,7 @@ class MyApp extends StatelessWidget {
         // Input Decoration Theme
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: const Color(0xFFFBE9), // Off-White
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
@@ -67,7 +62,7 @@ class MyApp extends StatelessWidget {
 
         // App Bar Theme
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF6A1B9A), // Deep Purple
+          backgroundColor: const Color(0xFFAD8B73), // Terracotta Brown
           foregroundColor: Colors.white,
           elevation: 0,
           titleTextStyle: GoogleFonts.nunito(

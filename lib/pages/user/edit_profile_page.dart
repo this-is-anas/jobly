@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-// import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  State createState() => _EditProfilePageState();
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
@@ -25,8 +23,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String? _resumeFileName;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  // Comment out Storage instance
-  // final FirebaseStorage _storage = FirebaseStorage.instance;
   String? _resumeUrl;
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
@@ -54,10 +50,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       final String userId = _auth.currentUser?.uid ?? '';
       if (userId.isEmpty) return;
-
-      final docSnapshot =
-      await _firestore.collection('users').doc(userId).get();
-
+      final docSnapshot = await _firestore.collection('users').doc(userId).get();
       if (docSnapshot.exists) {
         final data = docSnapshot.data()!;
         setState(() {
@@ -66,7 +59,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           _nameController.text = data['name'] ?? '';
           _resumeFileName = data['resumeFileName'];
           _resumeUrl = data['resumeUrl'];
-          // _profileImageUrl = data['profileImageUrl'];
         });
       }
     } catch (e) {
@@ -80,7 +72,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final userId = _auth.currentUser?.uid ?? '';
       final path = '${directory.path}/profile_$userId.jpg';
       final file = File(path);
-
       if (await file.exists()) {
         setState(() {
           _selectedImage = file;
@@ -97,10 +88,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final directory = await getApplicationDocumentsDirectory();
       final userId = _auth.currentUser?.uid ?? '';
       final path = '${directory.path}/profile_$userId.jpg';
-
-      // Copy the image to app's local storage
       await image.copy(path);
-
       setState(() {
         _selectedImage = File(path);
         _localImagePath = path;
@@ -121,7 +109,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.photo_library),
+                leading: const Icon(Icons.photo_library, color: Colors.black),
                 title: const Text('Gallery'),
                 onTap: () async {
                   Navigator.pop(context);
@@ -129,7 +117,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.camera_alt),
+                leading: const Icon(Icons.camera_alt, color: Colors.black),
                 title: const Text('Camera'),
                 onTap: () async {
                   Navigator.pop(context);
@@ -151,11 +139,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         maxHeight: 512,
         imageQuality: 75,
       );
-
       if (image != null) {
-        // Save image locally
         await _saveImageLocally(File(image.path));
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -183,15 +168,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
         setState(() {
           _isLoading = true;
         });
-
         final String userId = _auth.currentUser?.uid ?? '';
         if (userId.isEmpty) {
           throw 'User not logged in';
         }
-
         final userRef = _firestore.collection('users').doc(userId);
         final docSnapshot = await userRef.get();
-
         if (!docSnapshot.exists) {
           await userRef.set({
             'email': _emailController.text,
@@ -208,7 +190,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             'updatedAt': FieldValue.serverTimestamp(),
           });
         }
-
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -244,175 +225,159 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Profile'),
+        // backgroundColor: Colors.transparent, // Transparent AppBar
+        // systemOverlayStyle: SystemUiOverlayStyle(
+        //   statusBarColor: Colors.transparent, // Transparent status bar
+        //   statusBarIconBrightness: Brightness.light, // Light icons for dark backgrounds
+        // ),
       ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Profile Picture Section
-                    Center(
-                      child: Stack(
-                        children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Colors.grey[300],
-                            backgroundImage: _selectedImage != null
-                                ? FileImage(_selectedImage!)
-                                : null,
-                            child: _selectedImage == null
-                                ? Icon(Icons.person,
-                                size: 50, color: Colors.grey[600])
-                                : null,
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: CircleAvatar(
-                              backgroundColor: Theme.of(context).primaryColor,
-                              radius: 18,
-                              child: IconButton(
-                                icon: const Icon(Icons.camera_alt,
-                                    size: 18, color: Colors.white),
-                                onPressed: _showImageSourceDialog,
+      extendBodyBehindAppBar: true, // Extend body behind AppBar
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFFFFEFBA), // Warm Peach
+              const Color(0xFFFFFFFF), // Pure White
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              SizedBox.expand(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Profile Picture Section
+                        Center(
+                          child: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage: _selectedImage != null
+                                    ? FileImage(_selectedImage!)
+                                    : null,
+                                child: _selectedImage == null
+                                    ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                                    : null,
                               ),
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: CircleAvatar(
+                                  backgroundColor: Theme.of(context).primaryColor,
+                                  radius: 18,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                                    onPressed: _showImageSourceDialog,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // Name Field
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            labelText: 'Full Name',
+                            icon: const Icon(Icons.person, color: Colors.black),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: const Color(0xFFE2725B), width: 2.0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                        ],
-                      ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your name';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        // Email Field
+                        TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            icon: const Icon(Icons.email, color: Colors.black),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: const Color(0xFFE2725B), width: 2.0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!value.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        // Job Preferences Field
+                        TextFormField(
+                          controller: _jobPreferencesController,
+                          decoration: InputDecoration(
+                            labelText: 'Job Preferences',
+                            icon: const Icon(Icons.work, color: Colors.black),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: const Color(0xFFE2725B), width: 2.0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your job preferences';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        // Save Button
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _createOrUpdateUserProfile,
+                          child: _isLoading
+                              ? const CircularProgressIndicator()
+                              : const Text('Save Changes'),
+                        ),
+                        const SizedBox(height: 200), // Add extra space to test scrolling
+                      ],
                     ),
-                    const SizedBox(height: 24),
-
-                    // Full Name Field
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Full Name',
-                        icon: Icon(Icons.person, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
-                        labelStyle: GoogleFonts.nunito(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.grey[600], // Subtle gray for the label
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
-                      },
-                      style: GoogleFonts.nunito(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black87, // Dark text for input
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-        
-
-                    // Email Field
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        icon: Icon(Icons.email, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
-                        labelStyle: GoogleFonts.nunito(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.grey[600], // Subtle gray for the label
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                      style: GoogleFonts.nunito(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black87, // Dark text for input
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Job Preferences Field
-                    TextFormField(
-                      controller: _jobPreferencesController,
-                      decoration: InputDecoration(
-                        labelText: 'Job Preferences',
-                        icon: Icon(Icons.work, color: Theme.of(context).colorScheme.primary), // Use primary color for the icon
-                        labelStyle: GoogleFonts.nunito(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.grey[600], // Subtle gray for the label
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey[300]!), // Light gray border
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary), // Primary color for focus
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your job preferences';
-                        }
-                        return null;
-                      },
-                      style: GoogleFonts.nunito(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black87, // Dark text for input
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-        
-                    // Save Button
-                    ElevatedButton(
-                      onPressed: _isLoading ? null : _createOrUpdateUserProfile,
-                      child: _isLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Save Changes'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-            if (_isLoading)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
-                  child: CircularProgressIndicator(),
+              if (_isLoading)
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

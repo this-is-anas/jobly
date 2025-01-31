@@ -11,7 +11,6 @@ import '../services/job_service.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
 
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -31,7 +30,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true, // Ensure bottom bar is above content
-      body: SafeArea(child: _pages[_pageIndex]), // Display the selected page
+      body: _pages[_pageIndex], // Display the selected page
       bottomNavigationBar: CurvedNavigationBar(
         color: Theme.of(context).colorScheme.primary, // Use primary color
         buttonBackgroundColor: Theme.of(context).colorScheme.primary,
@@ -55,8 +54,6 @@ class _HomePageState extends State<HomePage> {
 }
 // Separate widget for Home Content
 
-
-
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -64,9 +61,11 @@ class HomeContent extends StatefulWidget {
   State<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin {
+class _HomeContentState extends State<HomeContent>
+    with TickerProviderStateMixin {
   final JobService _jobService = JobService(); // Initialize the JobService
-  final FirebaseService _firebaseService = FirebaseService(); // Initialize FirebaseService
+  final FirebaseService _firebaseService =
+      FirebaseService(); // Initialize FirebaseService
   List<dynamic> _jobs = [];
   int _currentIndex = 0; // Tracks the current job being displayed
   bool _isLoading = true; // Loading state
@@ -88,7 +87,8 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+    ).animate(CurvedAnimation(
+        parent: _animationController!, curve: Curves.easeInOut));
   }
 
   @override
@@ -123,13 +123,15 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
   void _handleSwipeRight() {
     if (_currentIndex < _jobs.length - 1) {
       final currentJob = _jobs[_currentIndex];
-      _firebaseService.saveJobToFirebase(currentJob); // Save the job to Firebase
+      _firebaseService
+          .saveJobToFirebase(currentJob); // Save the job to Firebase
 
       // Animate slide-out to the left
       _slideAnimation = Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(-1.0, 0), // Slide left
-      ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+      ).animate(CurvedAnimation(
+          parent: _animationController!, curve: Curves.easeInOut));
 
       _animationController!.forward().then((_) {
         setState(() {
@@ -153,7 +155,8 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
       _slideAnimation = Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(1.0, 0), // Slide right
-      ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+      ).animate(CurvedAnimation(
+          parent: _animationController!, curve: Curves.easeInOut));
 
       _animationController!.forward().then((_) {
         setState(() {
@@ -205,41 +208,54 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
           ),
         ],
       ),
-      body: Center(
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            // Detect swipe direction based on velocity
-            if (details.primaryVelocity! > 0) {
-              // Swiped left
-              _handleSwipeLeft();
-            } else if (details.primaryVelocity! < 0) {
-              // Swiped right
-              _handleSwipeRight();
-            }
-          },
-          child: AnimatedBuilder(
-            animation: _animationController ?? AlwaysStoppedAnimation(0), // Handle null case
-            builder: (context, child) {
-              return Transform.translate(
-                offset: _slideAnimation?.value ?? Offset.zero, // Handle null case
-                child: Opacity(
-                  opacity: 1 - (_animationController?.value ?? 0), // Handle null case
-                  child: JobCard(
-                    key: ValueKey(_currentIndex), // Unique key for each job
-                    jobTitle: currentJob['PositionTitle'] ?? 'No Title',
-                    companyName: currentJob['OrganizationName'] ?? 'No Company',
-                    location: currentJob['LocationName'] ?? 'No Location',
-                    requirements: currentJob['QualificationSummary'] ?? 'No Requirements',
-                    experience: currentJob['experience'] ?? 'Experience not specified',
-                    roleAndResponsibility:
-                    currentJob['role_and_responsibility'] ?? 'Role & Responsibility not specified',
-                    applyLink: currentJob['PositionURI'] ?? '', // Use the PositionURI from the API
-                    onSwipeRight: _handleSwipeRight,
-                    onSwipeLeft: _handleSwipeLeft,
-                  ),
-                ),
-              );
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFFFEFBA), // Warm Peach
+              const Color(0xFFFFFFFF), // Pure White
+            ],
+          ),
+        ),
+        child: Center(
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! > 0) {
+                _handleSwipeLeft();
+              } else if (details.primaryVelocity! < 0) {
+                _handleSwipeRight();
+              }
             },
+            child: AnimatedBuilder(
+              animation: _animationController ?? AlwaysStoppedAnimation(0),
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: _slideAnimation?.value ?? Offset.zero,
+                  child: Opacity(
+                    opacity: 1 - (_animationController?.value ?? 0),
+                    child: JobCard(
+                      key: ValueKey(_currentIndex),
+                      jobTitle: currentJob['PositionTitle'] ?? 'No Title',
+                      companyName:
+                          currentJob['OrganizationName'] ?? 'No Company',
+                      location: currentJob['LocationName'] ?? 'No Location',
+                      requirements: currentJob['QualificationSummary'] ??
+                          'No Requirements',
+                      experience: currentJob['experience'] ??
+                          'Experience not specified',
+                      roleAndResponsibility:
+                          currentJob['role_and_responsibility'] ??
+                              'Role & Responsibility not specified',
+                      applyLink: currentJob['PositionURI'] ?? '',
+                      onSwipeRight: _handleSwipeRight,
+                      onSwipeLeft: _handleSwipeLeft,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
