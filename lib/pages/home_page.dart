@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:jobly/pages/user/profile_page.dart';
 
 import '../assets/components/job_card.dart';
@@ -55,6 +56,7 @@ class _HomePageState extends State<HomePage> {
 // Separate widget for Home Content
 
 
+
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -62,17 +64,37 @@ class HomeContent extends StatefulWidget {
   State<HomeContent> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent> {
+class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin {
   final JobService _jobService = JobService(); // Initialize the JobService
   final FirebaseService _firebaseService = FirebaseService(); // Initialize FirebaseService
   List<dynamic> _jobs = [];
   int _currentIndex = 0; // Tracks the current job being displayed
   bool _isLoading = true; // Loading state
+  AnimationController? _animationController; // Nullable animation controller
+  Animation<Offset>? _slideAnimation;
 
   @override
   void initState() {
-    super.initState();
+    super.initState(); // Ensure this is called first
     _fetchJobs(); // Fetch jobs when the widget initializes
+
+    // Initialize the animation controller
+    _animationController = AnimationController(
+      vsync: this, // Use `this` because of TickerProviderStateMixin
+      duration: const Duration(milliseconds: 500),
+    );
+
+    // Default slide animation (no movement)
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose(); // Dispose of the animation controller
+    super.dispose();
   }
 
   Future<void> _fetchJobs() async {
@@ -102,9 +124,22 @@ class _HomeContentState extends State<HomeContent> {
     if (_currentIndex < _jobs.length - 1) {
       final currentJob = _jobs[_currentIndex];
       _firebaseService.saveJobToFirebase(currentJob); // Save the job to Firebase
-      setState(() {
-        _currentIndex++;
+
+      // Animate slide-out to the left
+      _slideAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(-1.0, 0), // Slide left
+      ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+
+      _animationController!.forward().then((_) {
+        setState(() {
+          _currentIndex++;
+          _animationController!.reset(); // Reset animation for next card
+        });
       });
+
+      // Haptic feedback
+      HapticFeedback.lightImpact();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No more jobs available')),
@@ -114,9 +149,21 @@ class _HomeContentState extends State<HomeContent> {
 
   void _handleSwipeLeft() {
     if (_currentIndex > 0) {
-      setState(() {
-        _currentIndex--;
+      // Animate slide-out to the right
+      _slideAnimation = Tween<Offset>(
+        begin: Offset.zero,
+        end: const Offset(1.0, 0), // Slide right
+      ).animate(CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut));
+
+      _animationController!.forward().then((_) {
+        setState(() {
+          _currentIndex--;
+          _animationController!.reset(); // Reset animation for next card
+        });
       });
+
+      // Haptic feedback
+      HapticFeedback.lightImpact();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You are at the first job')),
@@ -170,31 +217,29 @@ class _HomeContentState extends State<HomeContent> {
               _handleSwipeRight();
             }
           },
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            transitionBuilder: (child, animation) {
-              // Combine fade and scale transitions
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
-                  child: child,
+          child: AnimatedBuilder(
+            animation: _animationController ?? AlwaysStoppedAnimation(0), // Handle null case
+            builder: (context, child) {
+              return Transform.translate(
+                offset: _slideAnimation?.value ?? Offset.zero, // Handle null case
+                child: Opacity(
+                  opacity: 1 - (_animationController?.value ?? 0), // Handle null case
+                  child: JobCard(
+                    key: ValueKey(_currentIndex), // Unique key for each job
+                    jobTitle: currentJob['PositionTitle'] ?? 'No Title',
+                    companyName: currentJob['OrganizationName'] ?? 'No Company',
+                    location: currentJob['LocationName'] ?? 'No Location',
+                    requirements: currentJob['QualificationSummary'] ?? 'No Requirements',
+                    experience: currentJob['experience'] ?? 'Experience not specified',
+                    roleAndResponsibility:
+                    currentJob['role_and_responsibility'] ?? 'Role & Responsibility not specified',
+                    applyLink: currentJob['PositionURI'] ?? '', // Use the PositionURI from the API
+                    onSwipeRight: _handleSwipeRight,
+                    onSwipeLeft: _handleSwipeLeft,
+                  ),
                 ),
               );
             },
-            child: JobCard(
-              key: ValueKey(_currentIndex), // Unique key for each job
-              jobTitle: currentJob['PositionTitle'] ?? 'No Title',
-              companyName: currentJob['OrganizationName'] ?? 'No Company',
-              location: currentJob['LocationName'] ?? 'No Location',
-              requirements: currentJob['QualificationSummary'] ?? 'No Requirements',
-              experience: currentJob['experience'] ?? 'Experience not specified',
-              roleAndResponsibility:
-              currentJob['role_and_responsibility'] ?? 'Role & Responsibility not specified',
-              applyLink: currentJob['PositionURI'] ?? '', // Use the PositionURI from the API
-              onSwipeRight: _handleSwipeRight,
-              onSwipeLeft: _handleSwipeLeft,
-            ),
           ),
         ),
       ),
