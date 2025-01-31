@@ -10,6 +10,7 @@ import '../services/job_service.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
 
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -54,7 +55,6 @@ class _HomePageState extends State<HomePage> {
 // Separate widget for Home Content
 
 
-
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -80,10 +80,10 @@ class _HomeContentState extends State<HomeContent> {
       setState(() {
         _isLoading = true;
       });
-      final jobs = await _jobService.fetchJobs(
-        location: 'India', // Optional: Filter by location
-        title: 'Software Engineer', // Optional: Filter by job title
-        limit: 20, // Fetch up to 20 jobs
+      final jobs = await _jobService.fetchUsaJobs(
+        keyword: 'Software Engineer', // Optional: Filter by keyword
+        location: 'Washington, DC', // Optional: Filter by location
+        jobCategoryCode: '2210', // IT jobs
       );
       setState(() {
         _jobs = jobs;
@@ -158,25 +158,44 @@ class _HomeContentState extends State<HomeContent> {
           ),
         ],
       ),
-      body: SingleChildScrollView( // Make the content scrollable
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: JobCard(
-                jobTitle: currentJob['title'] ?? 'No Title',
-                companyName: currentJob['company'] ?? 'No Company',
-                location: currentJob['location'] ?? 'No Location',
-                requirements: currentJob['job_description'] ?? 'No Requirements',
-                experience: currentJob['experience'] ?? 'Experience not specified',
-                roleAndResponsibility:
-                currentJob['role_and_responsibility'] ?? 'Role & Responsibility not specified',
-                onSwipeRight: _handleSwipeRight,
-                onSwipeLeft: _handleSwipeLeft,
-              ),
+      body: Center(
+        child: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            // Detect swipe direction based on velocity
+            if (details.primaryVelocity! > 0) {
+              // Swiped left
+              _handleSwipeLeft();
+            } else if (details.primaryVelocity! < 0) {
+              // Swiped right
+              _handleSwipeRight();
+            }
+          },
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            transitionBuilder: (child, animation) {
+              // Combine fade and scale transitions
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: JobCard(
+              key: ValueKey(_currentIndex), // Unique key for each job
+              jobTitle: currentJob['PositionTitle'] ?? 'No Title',
+              companyName: currentJob['OrganizationName'] ?? 'No Company',
+              location: currentJob['LocationName'] ?? 'No Location',
+              requirements: currentJob['QualificationSummary'] ?? 'No Requirements',
+              experience: currentJob['experience'] ?? 'Experience not specified',
+              roleAndResponsibility:
+              currentJob['role_and_responsibility'] ?? 'Role & Responsibility not specified',
+              applyLink: currentJob['PositionURI'] ?? '', // Use the PositionURI from the API
+              onSwipeRight: _handleSwipeRight,
+              onSwipeLeft: _handleSwipeLeft,
             ),
-          ],
+          ),
         ),
       ),
     );
