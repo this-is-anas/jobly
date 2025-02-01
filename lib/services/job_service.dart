@@ -12,7 +12,7 @@ class JobService {
     const String baseUrl = 'https://arbeitnow.com/api/job-board-api';
 
     // Build query parameters
-    final Map<String, dynamic> queryParams = {
+    final Map<String, String> queryParams = {
       if (location != null && location.isNotEmpty) 'location': location,
       if (remote != null) 'remote': remote.toString(),
       'page': page.toString(),

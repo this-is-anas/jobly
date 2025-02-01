@@ -104,7 +104,7 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
     super.dispose();
   }
 
-  Future<void> _fetchJobs() async {
+  Future _fetchJobs() async {
     try {
       setState(() {
         _isLoading = true;
@@ -113,7 +113,7 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
       // Fetch jobs from the ArbeitNow API
       final jobs = await _jobService.fetchArbeitNowJobs(
         location: 'Berlin', // Example: Filter by location
-        remote: true, // Example: Filter for remote jobs
+        remote: true,       // Example: Filter for remote jobs
         page: 1,
         limit: 10,
       );
@@ -231,18 +231,17 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
                 child: Opacity(
                   opacity: 1 - _animationController.value,
                   child: JobCard(
-                    key: ValueKey(_currentIndex), // Unique key for each job
+                    key: ValueKey(_currentIndex),
                     jobTitle: currentJob['title'] ?? 'No Title',
                     companyName: currentJob['company_name'] ?? 'No Company',
                     location: currentJob['location'] ?? 'No Location',
                     requirements: currentJob['description'] ?? 'No Requirements',
-                    experience: currentJob['tags']?.join(', ') ?? 'Experience not specified',
-                    roleAndResponsibility: currentJob['description'] ?? 'Role & Responsibility not specified',
-                    applyLink: currentJob['url'] ?? '', // Use the URL from the API
-                    remote: currentJob['remote'] ?? false, // Check if the job is remote
+                    jobType: currentJob['tags']?.join(', ') ?? 'Not specified',
+                    salaryRange: currentJob['salaryRange'] ?? 'Salary not specified',
+                    applyLink: currentJob['url'] ?? '',
                     onSwipeRight: _handleSwipeRight,
                     onSwipeLeft: _handleSwipeLeft,
-                  ),
+                  )
                 ),
               );
             },

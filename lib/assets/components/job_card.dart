@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class JobCard extends StatefulWidget {
@@ -6,8 +7,7 @@ class JobCard extends StatefulWidget {
   final String companyName;
   final String location;
   final String? requirements; // Optional
-  final String? experience; // Optional
-  final String? roleAndResponsibility; // Optional
+  final String? jobType; // Optional
   final String? salaryRange; // Optional
   final String applyLink; // Required
   final VoidCallback? onSwipeRight; // Optional
@@ -21,8 +21,7 @@ class JobCard extends StatefulWidget {
     required this.location,
     required this.applyLink,
     this.requirements,
-    this.experience,
-    this.roleAndResponsibility,
+    this.jobType,
     this.salaryRange,
     this.onSwipeRight,
     this.onSwipeLeft,
@@ -154,27 +153,27 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        // Experience
-                        if (widget.experience != null)
+                        // Experience Field
+                        if (widget.jobType != null)
                           Row(
                             children: [
-                              const Icon(Icons.access_time, size: 16, color: Colors.blue),
+                              const Icon(Icons.work, size: 16, color: Colors.blue), // Changed icon to "work"
                               const SizedBox(width: 4),
                               Text(
-                                'Experience: ${widget.experience}',
+                                'Job Type: ${widget.jobType}', // Updated label to "Job Type"
                                 style: const TextStyle(fontSize: 14, color: Colors.blue),
                               ),
                             ],
                           ),
                         const SizedBox(height: 12),
-                        // Salary Range
+                        // Salary Field (New Field Below Experience)
                         if (widget.salaryRange != null)
                           Row(
                             children: [
                               const Icon(Icons.attach_money, size: 16, color: Colors.green),
                               const SizedBox(width: 4),
                               Text(
-                                widget.salaryRange!,
+                                'Salary: ${widget.salaryRange}',
                                 style: const TextStyle(fontSize: 14, color: Colors.green),
                               ),
                             ],
@@ -186,30 +185,13 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Requirements:',
+                                'Description:',
                                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 4),
-                              Text(
+                              HtmlWidget(
                                 widget.requirements!,
-                                style: const TextStyle(fontSize: 14, color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                        const SizedBox(height: 12),
-                        // Role and Responsibility
-                        if (widget.roleAndResponsibility != null)
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Role & Responsibility:',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.roleAndResponsibility!,
-                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                textStyle: const TextStyle(fontSize: 14, color: Colors.black54),
                               ),
                             ],
                           ),
