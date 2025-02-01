@@ -81,7 +81,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Future _logout() async {
     await _auth.signOut(); // Logs out from Firebase
     if (context.mounted) {
-      // Navigate back to LoginPage after logout
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -95,8 +94,12 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Theme.of(context).colorScheme.primary,
+          statusBarIconBrightness: Brightness.light,
+        ),
       ),
-      extendBodyBehindAppBar: true, // Extend body behind AppBar
+      extendBodyBehindAppBar: true,
       body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -119,47 +122,70 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Stack(
                     children: [
                       CircleAvatar(
-                        radius: 50,
+                        radius: 60,
                         backgroundColor: Colors.grey[300],
                         backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
                         child: _profileImage == null
-                            ? Icon(Icons.person, size: 50, color: Colors.grey[600])
+                            ? Icon(Icons.person, size: 60, color: Colors.grey[600])
                             : null,
                       ),
+                      // Positioned(
+                      //   right: 0,
+                      //   bottom: 0,
+                      //   child: CircleAvatar(
+                      //     backgroundColor: Theme.of(context).primaryColor,
+                      //     radius: 18,
+                      //     child: IconButton(
+                      //       icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                      //       onPressed: () {
+                      //         _navigateToEditProfile(); // Navigate to EditProfilePage
+                      //       },
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
+
                 // User Information Card
                 Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildProfileInfoRow(Icons.person, "Name", _name ?? "John Doe"),
-                        const Divider(),
+                        const Divider(color: Colors.grey),
                         _buildProfileInfoRow(Icons.email, "Email", _email ?? "Email not available"),
-                        const Divider(),
+                        const Divider(color: Colors.grey),
                         _buildProfileInfoRow(Icons.work, "Job Preferences", _jobPreferences ?? "Not set"),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 20),
+
                 // Edit Profile Button
                 ElevatedButton.icon(
                   onPressed: _navigateToEditProfile,
                   icon: const Icon(Icons.edit),
                   label: const Text("Edit Profile"),
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+
                 // Logout Button
                 ElevatedButton.icon(
                   onPressed: _logout,
@@ -169,7 +195,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ],
@@ -183,10 +211,10 @@ class _ProfilePageState extends State<ProfilePage> {
   // Helper function to build profile info row
   Widget _buildProfileInfoRow(IconData icon, String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blue, size: 24),
+          Icon(icon, color: Colors.black, size: 24), // Changed icon color to black
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -198,7 +226,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 Text(
                   value,
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16, color: Colors.black87),
                 ),
               ],
             ),

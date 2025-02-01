@@ -2,39 +2,32 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class JobService {
-  final String _email = ''; // Replace with your email
-  final String _authKey = ''; // Replace with your USAJobs API key
-
-  Future<List<dynamic>> fetchUsaJobs({
-    String? keyword,
+  // Fetch jobs from the ArbeitNow API
+  Future<List> fetchArbeitNowJobs({
     String? location,
-    String? jobCategoryCode,
+    bool? remote,
+    int page = 1,
+    int limit = 10,
   }) async {
-    const String baseUrl = 'https://data.usajobs.gov/api/search';
+    const String baseUrl = 'https://arbeitnow.com/api/job-board-api';
 
     // Build query parameters
     final Map<String, dynamic> queryParams = {
-      if (keyword != null && keyword.isNotEmpty) 'Keyword': keyword,
-      if (location != null && location.isNotEmpty) 'LocationName': location,
-      if (jobCategoryCode != null && jobCategoryCode.isNotEmpty)
-        'JobCategoryCode': jobCategoryCode,
+      if (location != null && location.isNotEmpty) 'location': location,
+      if (remote != null) 'remote': remote.toString(),
+      'page': page.toString(),
+      'limit': limit.toString(),
     };
 
     try {
       final response = await http.get(
         Uri.parse(baseUrl).replace(queryParameters: queryParams),
-        headers: {
-          'Host': 'data.usajobs.gov',
-          'User-Agent': _email,
-          'Authorization-Key': _authKey,
-        },
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> jobs =
-            data['SearchResult']['SearchResultItems'] ?? [];
-        return jobs.map((item) => item['MatchedObjectDescriptor']).toList();
+        final List jobs = data['data'] ?? [];
+        return jobs;
       } else {
         print('Failed to fetch jobs. Status code: ${response.statusCode}');
         throw Exception('Failed to load jobs');

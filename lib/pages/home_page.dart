@@ -3,24 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:jobly/pages/user/profile_page.dart';
-
 import '../assets/components/job_card.dart';
 import '../services/firebase_service.dart';
 import '../services/job_service.dart';
 import 'history/history_page.dart';
 import 'login/login_page.dart';
+import 'user/profile_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _pageIndex = 0; // Tracks the current page index
-  final List<Widget> _pages = [
+
+  final List _pages = [
     const HomeContent(), // Home Content (not HomePage itself)
     const ProfilePage(), // Profile Page
     const HistoryPage(), // History Page
@@ -30,7 +30,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true, // Ensure bottom bar is above content
-      body: _pages[_pageIndex], // Display the selected page
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFFFFEFBA), // Warm Peach
+              const Color(0xFFFFFFFF), // Pure White
+            ],
+          ),
+        ),
+        child: _pages[_pageIndex], // Display the selected page
+      ),
       bottomNavigationBar: CurvedNavigationBar(
         color: Theme.of(context).colorScheme.primary, // Use primary color
         buttonBackgroundColor: Theme.of(context).colorScheme.primary,
@@ -52,48 +64,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-// Separate widget for Home Content
 
+// Separate widget for Home Content
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
   @override
-  State<HomeContent> createState() => _HomeContentState();
+  State createState() => _HomeContentState();
 }
 
-class _HomeContentState extends State<HomeContent>
-    with TickerProviderStateMixin {
+class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin {
   final JobService _jobService = JobService(); // Initialize the JobService
-  final FirebaseService _firebaseService =
-      FirebaseService(); // Initialize FirebaseService
-  List<dynamic> _jobs = [];
+  final FirebaseService _firebaseService = FirebaseService(); // Initialize FirebaseService
+  List _jobs = [];
   int _currentIndex = 0; // Tracks the current job being displayed
   bool _isLoading = true; // Loading state
-  AnimationController? _animationController; // Nullable animation controller
-  Animation<Offset>? _slideAnimation;
+  late AnimationController _animationController; // Animation controller
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
-    super.initState(); // Ensure this is called first
+    super.initState();
     _fetchJobs(); // Fetch jobs when the widget initializes
-
     // Initialize the animation controller
     _animationController = AnimationController(
       vsync: this, // Use `this` because of TickerProviderStateMixin
       duration: const Duration(milliseconds: 500),
     );
-
     // Default slide animation (no movement)
-    _slideAnimation = Tween<Offset>(
+    _slideAnimation = Tween(
       begin: Offset.zero,
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-        parent: _animationController!, curve: Curves.easeInOut));
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
-    _animationController?.dispose(); // Dispose of the animation controller
+    _animationController.dispose(); // Dispose of the animation controller
     super.dispose();
   }
 
@@ -102,11 +109,15 @@ class _HomeContentState extends State<HomeContent>
       setState(() {
         _isLoading = true;
       });
-      final jobs = await _jobService.fetchUsaJobs(
-        keyword: 'Software Engineer', // Optional: Filter by keyword
-        location: 'Washington, DC', // Optional: Filter by location
-        jobCategoryCode: '2210', // IT jobs
+
+      // Fetch jobs from the ArbeitNow API
+      final jobs = await _jobService.fetchArbeitNowJobs(
+        location: 'Berlin', // Example: Filter by location
+        remote: true, // Example: Filter for remote jobs
+        page: 1,
+        limit: 10,
       );
+
       setState(() {
         _jobs = jobs;
         _currentIndex = 0; // Reset to the first job
@@ -123,23 +134,18 @@ class _HomeContentState extends State<HomeContent>
   void _handleSwipeRight() {
     if (_currentIndex < _jobs.length - 1) {
       final currentJob = _jobs[_currentIndex];
-      _firebaseService
-          .saveJobToFirebase(currentJob); // Save the job to Firebase
-
+      _firebaseService.saveJobToFirebase(currentJob); // Save the job to Firebase
       // Animate slide-out to the left
-      _slideAnimation = Tween<Offset>(
+      _slideAnimation = Tween(
         begin: Offset.zero,
         end: const Offset(-1.0, 0), // Slide left
-      ).animate(CurvedAnimation(
-          parent: _animationController!, curve: Curves.easeInOut));
-
-      _animationController!.forward().then((_) {
+      ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+      _animationController.forward().then((_) {
         setState(() {
           _currentIndex++;
-          _animationController!.reset(); // Reset animation for next card
+          _animationController.reset(); // Reset animation for next card
         });
       });
-
       // Haptic feedback
       HapticFeedback.lightImpact();
     } else {
@@ -152,19 +158,16 @@ class _HomeContentState extends State<HomeContent>
   void _handleSwipeLeft() {
     if (_currentIndex > 0) {
       // Animate slide-out to the right
-      _slideAnimation = Tween<Offset>(
+      _slideAnimation = Tween(
         begin: Offset.zero,
         end: const Offset(1.0, 0), // Slide right
-      ).animate(CurvedAnimation(
-          parent: _animationController!, curve: Curves.easeInOut));
-
-      _animationController!.forward().then((_) {
+      ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+      _animationController.forward().then((_) {
         setState(() {
           _currentIndex--;
-          _animationController!.reset(); // Reset animation for next card
+          _animationController.reset(); // Reset animation for next card
         });
       });
-
       // Haptic feedback
       HapticFeedback.lightImpact();
     } else {
@@ -182,7 +185,6 @@ class _HomeContentState extends State<HomeContent>
         body: const Center(child: CircularProgressIndicator()),
       );
     }
-
     if (_jobs.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Tech Jobs')),
@@ -191,71 +193,59 @@ class _HomeContentState extends State<HomeContent>
     }
 
     final currentJob = _jobs[_currentIndex];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tech Jobs'),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Theme.of(context).colorScheme.primary, // Match app bar color
+          statusBarIconBrightness: Brightness.light, // Light icons for dark backgrounds
+        ),
         actions: [
           IconButton(
             onPressed: () {
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const LoginPage()),
               );
             },
             icon: const Icon(Icons.logout), // Logout icon
           ),
         ],
       ),
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFFFEFBA), // Warm Peach
-              const Color(0xFFFFFFFF), // Pure White
-            ],
-          ),
-        ),
-        child: Center(
-          child: GestureDetector(
-            onHorizontalDragEnd: (details) {
-              if (details.primaryVelocity! > 0) {
-                _handleSwipeLeft();
-              } else if (details.primaryVelocity! < 0) {
-                _handleSwipeRight();
-              }
-            },
-            child: AnimatedBuilder(
-              animation: _animationController ?? AlwaysStoppedAnimation(0),
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: _slideAnimation?.value ?? Offset.zero,
-                  child: Opacity(
-                    opacity: 1 - (_animationController?.value ?? 0),
-                    child: JobCard(
-                      key: ValueKey(_currentIndex),
-                      jobTitle: currentJob['PositionTitle'] ?? 'No Title',
-                      companyName:
-                          currentJob['OrganizationName'] ?? 'No Company',
-                      location: currentJob['LocationName'] ?? 'No Location',
-                      requirements: currentJob['QualificationSummary'] ??
-                          'No Requirements',
-                      experience: currentJob['experience'] ??
-                          'Experience not specified',
-                      roleAndResponsibility:
-                          currentJob['role_and_responsibility'] ??
-                              'Role & Responsibility not specified',
-                      applyLink: currentJob['PositionURI'] ?? '',
-                      onSwipeRight: _handleSwipeRight,
-                      onSwipeLeft: _handleSwipeLeft,
-                    ),
+      body: Center(
+        child: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            // Detect swipe direction based on velocity
+            if (details.primaryVelocity! > 0) {
+              // Swiped left
+              _handleSwipeLeft();
+            } else if (details.primaryVelocity! < 0) {
+              // Swiped right
+              _handleSwipeRight();
+            }
+          },
+          child: AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: _slideAnimation.value,
+                child: Opacity(
+                  opacity: 1 - _animationController.value,
+                  child: JobCard(
+                    key: ValueKey(_currentIndex), // Unique key for each job
+                    jobTitle: currentJob['title'] ?? 'No Title',
+                    companyName: currentJob['company_name'] ?? 'No Company',
+                    location: currentJob['location'] ?? 'No Location',
+                    requirements: currentJob['description'] ?? 'No Requirements',
+                    experience: currentJob['tags']?.join(', ') ?? 'Experience not specified',
+                    roleAndResponsibility: currentJob['description'] ?? 'Role & Responsibility not specified',
+                    applyLink: currentJob['url'] ?? '', // Use the URL from the API
+                    remote: currentJob['remote'] ?? false, // Check if the job is remote
+                    onSwipeRight: _handleSwipeRight,
+                    onSwipeLeft: _handleSwipeLeft,
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

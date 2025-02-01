@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -48,7 +49,11 @@ class _HistoryPageState extends State<HistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Saved Jobs'),
+        title: const Text("Saved Jobs"),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Theme.of(context).colorScheme.primary, // Match app bar color
+          statusBarIconBrightness: Brightness.light, // Light icons for dark backgrounds
+        ),
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(

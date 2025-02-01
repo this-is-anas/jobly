@@ -5,30 +5,32 @@ class JobCard extends StatefulWidget {
   final String jobTitle;
   final String companyName;
   final String location;
-  final String requirements;
-  final String? experience;
-  final String? roleAndResponsibility;
-  final String? salaryRange;
-  final String applyLink; // Apply link for the job
-  final VoidCallback onSwipeRight;
-  final VoidCallback onSwipeLeft;
+  final String? requirements; // Optional
+  final String? experience; // Optional
+  final String? roleAndResponsibility; // Optional
+  final String? salaryRange; // Optional
+  final String applyLink; // Required
+  final VoidCallback? onSwipeRight; // Optional
+  final VoidCallback? onSwipeLeft; // Optional
+  final bool remote; // Optional
 
   const JobCard({
     super.key,
     required this.jobTitle,
     required this.companyName,
     required this.location,
-    required this.requirements,
+    required this.applyLink,
+    this.requirements,
     this.experience,
     this.roleAndResponsibility,
     this.salaryRange,
-    required this.applyLink,
-    required this.onSwipeRight,
-    required this.onSwipeLeft,
+    this.onSwipeRight,
+    this.onSwipeLeft,
+    this.remote = false, // Default to false if not provided
   });
 
   @override
-  State<JobCard> createState() => _JobCardState();
+  State createState() => _JobCardState();
 }
 
 class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
@@ -39,26 +41,22 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-
     // Initialize the animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-
     // Fade-in animation
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-
     // Slide-up animation
-    _slideAnimation = Tween<Offset>(
+    _slideAnimation = Tween(
       begin: const Offset(0, 0.2), // Start slightly below
       end: Offset.zero, // End at the original position
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-
     // Start the animation
     _animationController.forward();
   }
@@ -76,7 +74,6 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
       );
       return;
     }
-
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -120,7 +117,6 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                           ),
                         ),
                         const SizedBox(height: 8),
-
                         // Company Name
                         Row(
                           children: [
@@ -133,6 +129,7 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                           ],
                         ),
                         const SizedBox(height: 8),
+                        // Location and Remote Tag
                         Row(
                           children: [
                             const Icon(Icons.location_on, size: 16, color: Colors.grey),
@@ -141,100 +138,99 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                               widget.location,
                               style: const TextStyle(fontSize: 16, color: Colors.grey),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Experience and Salary
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            if (widget.experience != null)
-                              Row(
-                                children: [
-                                  const Icon(Icons.access_time, size: 16, color: Colors.blue),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Experience: ${widget.experience}',
-                                    style: const TextStyle(fontSize: 14, color: Colors.blue),
-                                  ),
-                                ],
-                              ),
-                            if (widget.salaryRange != null)
-                              Row(
-                                children: [
-                                  const Icon(Icons.attach_money, size: 16, color: Colors.green),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    widget.salaryRange!,
-                                    style: const TextStyle(fontSize: 14, color: Colors.green),
-                                  ),
-                                ],
+                            const SizedBox(width: 8),
+                            if (widget.remote)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Remote',
+                                  style: TextStyle(fontSize: 12, color: Colors.green),
+                                ),
                               ),
                           ],
                         ),
                         const SizedBox(height: 12),
-
-                        // Role and Responsibility
-                        if (widget.roleAndResponsibility != null)
+                        // Experience
+                        if (widget.experience != null)
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.task, size: 16, color: Colors.orange),
+                              const Icon(Icons.access_time, size: 16, color: Colors.blue),
                               const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  'Role & Responsibility: ${widget.roleAndResponsibility}',
-                                  style: const TextStyle(fontSize: 14, color: Colors.black87),
-                                ),
+                              Text(
+                                'Experience: ${widget.experience}',
+                                style: const TextStyle(fontSize: 14, color: Colors.blue),
                               ),
                             ],
                           ),
                         const SizedBox(height: 12),
-
+                        // Salary Range
+                        if (widget.salaryRange != null)
+                          Row(
+                            children: [
+                              const Icon(Icons.attach_money, size: 16, color: Colors.green),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.salaryRange!,
+                                style: const TextStyle(fontSize: 14, color: Colors.green),
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 12),
                         // Requirements
-                        Text(
-                          'Requirements:',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.requirements,
-                          style: const TextStyle(fontSize: 14, color: Colors.black54),
-                        ),
+                        if (widget.requirements != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Requirements:',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.requirements!,
+                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        const SizedBox(height: 12),
+                        // Role and Responsibility
+                        if (widget.roleAndResponsibility != null)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Role & Responsibility:',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.roleAndResponsibility!,
+                                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
                 ),
-
                 // Action Buttons
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton.icon(
-                          onPressed: () => _launchApplyLink(context, widget.applyLink),
-                          icon: const Icon(Icons.open_in_new, size: 16),
-                          label: const Text('Apply Now'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
+                      ElevatedButton.icon(
+                        onPressed: () => _launchApplyLink(context, widget.applyLink),
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: const Text('Apply Now'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
                       ),
                     ],
