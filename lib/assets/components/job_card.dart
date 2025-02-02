@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:html/parser.dart' as html_parser;
 
 class JobCard extends StatefulWidget {
   final String jobTitle;
@@ -38,57 +37,33 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  String? _cleanedRequirements; // Stores the cleaned requirements text
-  String? _extractedApplyLink; // Stores the extracted "Find More" link
-
   @override
   void initState() {
     super.initState();
-
-    // Initialize animations
+    // Initialize the animation controller
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
+    // Fade-in animation
     _fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    // Slide-up animation
     _slideAnimation = Tween(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
+      begin: const Offset(0, 0.2), // Start slightly below
+      end: Offset.zero, // End at the original position
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
+    // Start the animation
     _animationController.forward();
-
-    // Process the requirements field
-    _processRequirements();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
-  }
-
-  /// Processes the `requirements` field to extract the "Find More" link and clean the text.
-  void _processRequirements() {
-    if (widget.requirements == null) return;
-
-    // Parse the HTML content
-    final document = html_parser.parse(widget.requirements);
-
-    // Extract the "Find More" link
-    final anchorTags = document.getElementsByTagName('a');
-    for (var tag in anchorTags) {
-      if (tag.text.trim().toLowerCase() == 'find more') {
-        _extractedApplyLink = tag.attributes['href'];
-        break;
-      }
-    }
-
-    // Remove all <a> tags and get plain text
-    _cleanedRequirements = document.body?.text ?? '';
   }
 
   Future<void> _launchApplyLink(BuildContext context, String? url) async {
@@ -118,10 +93,10 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
           margin: const EdgeInsets.all(16.0),
           elevation: 4,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Rounded corners for the card
+            borderRadius: BorderRadius.circular(16), // Rounded corners for the card
           ),
           child: SizedBox(
-            height: 400, // Fixed height for the card
+            height: 450, // Slightly increased height for better spacing
             child: Column(
               children: [
                 // Scrollable Content
@@ -134,33 +109,35 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                         // Job Title
                         Text(
                           widget.jobTitle,
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 8),
                         // Company Name
-                        Row(
-                          children: [
-                            const Icon(Icons.business, size: 16, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(
-                              widget.companyName,
-                              style: const TextStyle(fontSize: 14, color: Colors.grey),
-                            ),
-                          ],
+                        SingleChildScrollView(scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              Icon(Icons.business, size: 18, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.companyName,
+                                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 8),
                         // Location and Remote Tag
                         Row(
                           children: [
-                            const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                            Icon(Icons.location_on, size: 18, color: Colors.grey[600]),
                             const SizedBox(width: 4),
                             Text(
                               widget.location,
-                              style: const TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                             ),
                             const SizedBox(width: 8),
                             if (widget.remote)
@@ -170,9 +147,9 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                                   color: Colors.green[100],
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Remote',
-                                  style: TextStyle(fontSize: 12, color: Colors.green),
+                                  style: TextStyle(fontSize: 12, color: Colors.green[800]),
                                 ),
                               ),
                           ],
@@ -182,30 +159,30 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                         if (widget.jobType != null)
                           Row(
                             children: [
-                              const Icon(Icons.work, size: 16, color: Colors.blue),
+                              Icon(Icons.work, size: 18, color: Colors.blue[600]),
                               const SizedBox(width: 4),
                               Text(
                                 'Job Type: ${widget.jobType}',
-                                style: const TextStyle(fontSize: 14, color: Colors.blue),
+                                style: TextStyle(fontSize: 14, color: Colors.blue[600]),
                               ),
                             ],
                           ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         // Salary Range
                         if (widget.salaryRange != null)
                           Row(
                             children: [
-                              const Icon(Icons.attach_money, size: 16, color: Colors.green),
+                              Icon(Icons.attach_money, size: 18, color: Colors.green[600]),
                               const SizedBox(width: 4),
                               Text(
                                 'Salary: ${widget.salaryRange}',
-                                style: const TextStyle(fontSize: 14, color: Colors.green),
+                                style: TextStyle(fontSize: 14, color: Colors.green[600]),
                               ),
                             ],
                           ),
                         const SizedBox(height: 12),
                         // Requirements
-                        if (_cleanedRequirements != null)
+                        if (widget.requirements != null)
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -215,7 +192,7 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                               ),
                               const SizedBox(height: 4),
                               HtmlWidget(
-                                _cleanedRequirements!,
+                                widget.requirements!,
                                 textStyle: const TextStyle(fontSize: 14, color: Colors.black54),
                               ),
                             ],
@@ -231,14 +208,16 @@ class _JobCardState extends State<JobCard> with SingleTickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: () =>
-                            _launchApplyLink(context, _extractedApplyLink ?? widget.applyLink),
+                        onPressed: () => _launchApplyLink(context, widget.applyLink),
                         icon: const Icon(Icons.open_in_new, size: 16),
                         label: const Text('Apply Now'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
+                          backgroundColor: Theme.of(context).colorScheme.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
                       ),
                     ],

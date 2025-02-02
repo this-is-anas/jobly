@@ -3,7 +3,7 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/auth_service.dart';
-import '../home_page.dart';
+import '../home/home_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});

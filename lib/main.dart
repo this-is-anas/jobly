@@ -36,9 +36,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.light(
           primary: const Color(0xFFAD8B73), // Terracotta Brown
           secondary: const Color(0xFFCEAB93), // Beige-Brown
-          background: const Color(0xFFFBE9), // Off-White Background
+          // surface: const Color(0x00fffbe9), // Off-White Background
         ),
-        scaffoldBackgroundColor: const Color(0xFFFBE9), // Off-White for Scaffold
+        scaffoldBackgroundColor: const Color(0x00fffbe9), // Off-White for Scaffold
 
         // Text Theme with Nunito Font
         textTheme: GoogleFonts.nunitoTextTheme().copyWith(
@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
         // Input Decoration Theme
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xFFFBE9), // Off-White
+          fillColor: const Color(0x00fffbe9), // Off-White
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,

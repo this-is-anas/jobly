@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
 
   @override
-  State createState() => _HistoryPageState();
+  State<HistoryPage> createState() => _HistoryPageState();
 }
 
 class _HistoryPageState extends State<HistoryPage> {
@@ -26,13 +26,21 @@ class _HistoryPageState extends State<HistoryPage> {
       setState(() {
         _isLoading = true;
       });
-      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      final String? userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) {
         throw Exception('User not logged in');
       }
-      final querySnapshot =
+
+      // Fetch saved jobs from Firestore
+      final QuerySnapshot querySnapshot =
       await _firestore.collection('users').doc(userId).collection('saved_jobs').get();
-      final jobs = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+      // Safely map the documents to a list of maps
+      final List<Map<String, dynamic>> jobs = querySnapshot.docs
+          .map((doc) => Map<String, dynamic>.from(doc.data() as Map))
+          .toList();
+
       setState(() {
         _savedJobs = jobs;
         _isLoading = false;
@@ -41,7 +49,57 @@ class _HistoryPageState extends State<HistoryPage> {
       setState(() {
         _isLoading = false;
       });
-      print('Error fetching saved jobs: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load saved jobs: $e')),
+      );
+    }
+  }
+
+  Future<void> _deleteJob(String jobId) async {
+    try {
+      final String? userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      // Delete the job from Firestore
+      final userJobsRef = _firestore.collection('users').doc(userId).collection('saved_jobs');
+      final querySnapshot = await userJobsRef.where('id', isEqualTo: jobId).get();
+
+      for (final doc in querySnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Remove the job from the local list
+      setState(() {
+        _savedJobs.removeWhere((job) => job['id'] == jobId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Job removed from history')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting job: $e')),
+      );
+    }
+  }
+
+  Future<void> _launchURL(String? url) async {
+    if (url == null || url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No application link available')),
+      );
+      return;
+    }
+
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to open application link')),
+      );
     }
   }
 
@@ -50,10 +108,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Saved Jobs"),
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Theme.of(context).colorScheme.primary, // Match app bar color
-          statusBarIconBrightness: Brightness.light, // Light icons for dark backgrounds
-        ),
+        centerTitle: true,
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -62,28 +117,70 @@ class _HistoryPageState extends State<HistoryPage> {
             end: Alignment.bottomCenter,
             colors: [
               const Color(0xFFFFEFBA), // Warm Peach
-              const Color(0xFFFFFFFF), // Pure White
+              Colors.white, // Pure White
             ],
           ),
         ),
-        child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _savedJobs.isEmpty
-              ? const Center(child: Text('No saved jobs'))
-              : ListView.builder(
-            itemCount: _savedJobs.length,
-            itemBuilder: (context, index) {
-              final job = _savedJobs[index];
-              return ListTile(
-                title: Text(job['title'] ?? 'No Title'),
-                subtitle: Text(job['company'] ?? 'No Company'),
-                trailing: Text(job['location'] ?? 'No Location'),
-              );
-            },
-          ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _savedJobs.isEmpty
+            ? const Center(child: Text('No saved jobs available'))
+            : ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: _savedJobs.length,
+          itemBuilder: (context, index) {
+            final job = _savedJobs[index];
+            // Safely handle null values
+            final String jobId = job['id'] ?? job['url'] ?? UniqueKey().toString();
+            final String jobTitle = job['title'] ?? 'No Title';
+            final String companyName = job['company_name'] ?? 'No Company';
+            final String location = job['location'] ?? 'No Location';
+            final String applyUrl = job['url'] ?? '';
+
+            return Dismissible(
+              key: Key(jobId),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
+              onDismissed: (direction) {
+                _deleteJob(jobId);
+              },
+              child: Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  title: Text(
+                    jobTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(companyName),
+                      const SizedBox(height: 4),
+                      Text(location),
+                    ],
+                  ),
+                  onTap: () {
+                    // Navigate to job details or open the apply link
+                    if (applyUrl.isNotEmpty) {
+                      _launchURL(applyUrl);
+                    }
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
-  }
-}
+  }}

@@ -1,71 +1,10 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import '../assets/components/job_card.dart';
-import '../services/firebase_service.dart';
-import '../services/job_service.dart';
-import 'history/history_page.dart';
-import 'login/login_page.dart';
-import 'user/profile_page.dart';
+import '../../assets/components/job_card.dart';
+import '../../services/firebase_service.dart';
+import '../../services/job_service.dart';
+import '../login/login_page.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _pageIndex = 0; // Tracks the current page index
-
-  final List _pages = [
-    const HomeContent(), // Home Content (not HomePage itself)
-    const ProfilePage(), // Profile Page
-    const HistoryPage(), // History Page
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true, // Ensure bottom bar is above content
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFFFFEFBA), // Warm Peach
-              const Color(0xFFFFFFFF), // Pure White
-            ],
-          ),
-        ),
-        child: _pages[_pageIndex], // Display the selected page
-      ),
-      bottomNavigationBar: CurvedNavigationBar(
-        color: Theme.of(context).colorScheme.primary, // Use primary color
-        buttonBackgroundColor: Theme.of(context).colorScheme.primary,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        height: 60,
-        animationDuration: const Duration(milliseconds: 300),
-        index: _pageIndex,
-        items: const [
-          Icon(Icons.home, size: 30, color: Colors.white),
-          Icon(Icons.person, size: 30, color: Colors.white),
-          Icon(Icons.history, size: 30, color: Colors.white),
-        ],
-        onTap: (index) {
-          setState(() {
-            _pageIndex = index;
-          });
-        },
-      ),
-    );
-  }
-}
-
-// Separate widget for Home Content
 class HomeContent extends StatefulWidget {
   const HomeContent({super.key});
 
@@ -76,9 +15,11 @@ class HomeContent extends StatefulWidget {
 class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin {
   final JobService _jobService = JobService(); // Initialize the JobService
   final FirebaseService _firebaseService = FirebaseService(); // Initialize FirebaseService
+
   List _jobs = [];
   int _currentIndex = 0; // Tracks the current job being displayed
   bool _isLoading = true; // Loading state
+
   late AnimationController _animationController; // Animation controller
   late Animation<Offset> _slideAnimation;
 
@@ -86,13 +27,15 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
   void initState() {
     super.initState();
     _fetchJobs(); // Fetch jobs when the widget initializes
+
     // Initialize the animation controller
     _animationController = AnimationController(
       vsync: this, // Use `this` because of TickerProviderStateMixin
       duration: const Duration(milliseconds: 500),
     );
+
     // Default slide animation (no movement)
-    _slideAnimation = Tween(
+    _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
@@ -110,16 +53,30 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
         _isLoading = true;
       });
 
-      // Fetch jobs from the ArbeitNow API
+      // Fetch jobs from the API
       final jobs = await _jobService.fetchArbeitNowJobs(
-        location: 'Berlin', // Example: Filter by location
-        remote: true,       // Example: Filter for remote jobs
+        location: 'Berlin',
+        remote: true,
         page: 1,
         limit: 10,
       );
 
+      // Preprocess jobs to ensure required fields are present
+      final processedJobs = jobs.map((job) {
+        return {
+          'id': job['url'] ?? UniqueKey().toString(), // Use URL as ID or generate a unique key
+          'title': job['title'] ?? 'No Title',
+          'company_name': job['company_name'] ?? 'No Company',
+          'location': job['location'] ?? 'No Location',
+          'description': job['description'] ?? 'No Requirements',
+          'tags': job['tags'] ?? [],
+          'salaryRange': job['salaryRange'] ?? 'Salary not specified',
+          'url': job['url'] ?? '',
+        };
+      }).toList();
+
       setState(() {
-        _jobs = jobs;
+        _jobs = processedJobs;
         _currentIndex = 0; // Reset to the first job
         _isLoading = false;
       });
@@ -135,39 +92,48 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
     if (_currentIndex < _jobs.length - 1) {
       final currentJob = _jobs[_currentIndex];
       _firebaseService.saveJobToFirebase(currentJob); // Save the job to Firebase
+
       // Animate slide-out to the left
       _slideAnimation = Tween(
         begin: Offset.zero,
         end: const Offset(-1.0, 0), // Slide left
       ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+
       _animationController.forward().then((_) {
-        setState(() {
-          _currentIndex++;
-          _animationController.reset(); // Reset animation for next card
-        });
+        if (mounted) {
+          setState(() {
+            _currentIndex++;
+            _animationController.reset(); // Reset animation for next card
+          });
+        }
       });
+
       // Haptic feedback
       HapticFeedback.lightImpact();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No more jobs available')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No more jobs available')),
+        );
+      }
     }
   }
 
   void _handleSwipeLeft() {
     if (_currentIndex > 0) {
       // Animate slide-out to the right
-      _slideAnimation = Tween(
+      _slideAnimation = Tween<Offset>(
         begin: Offset.zero,
         end: const Offset(1.0, 0), // Slide right
       ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+
       _animationController.forward().then((_) {
         setState(() {
           _currentIndex--;
-          _animationController.reset(); // Reset animation for next card
+          _animationController.reset(); // Reset animation for the next card
         });
       });
+
       // Haptic feedback
       HapticFeedback.lightImpact();
     } else {
@@ -185,6 +151,7 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
         body: const Center(child: CircularProgressIndicator()),
       );
     }
+
     if (_jobs.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Tech Jobs')),
@@ -193,6 +160,7 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
     }
 
     final currentJob = _jobs[_currentIndex];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tech Jobs'),
@@ -241,7 +209,7 @@ class _HomeContentState extends State<HomeContent> with TickerProviderStateMixin
                     applyLink: currentJob['url'] ?? '',
                     onSwipeRight: _handleSwipeRight,
                     onSwipeLeft: _handleSwipeLeft,
-                  )
+                  ),
                 ),
               );
             },
